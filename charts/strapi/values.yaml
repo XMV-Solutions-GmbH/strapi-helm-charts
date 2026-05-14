@@ -1,0 +1,157 @@
+# Default values for the Strapi Helm chart.
+# Designed for production deployment on Kubernetes with:
+#   - External PostgreSQL (CNPG or any Postgres-compatible endpoint)
+#   - S3-compatible media storage (MinIO, AWS S3, Hetzner Object Storage)
+#   - Ingress with TLS
+#   - Multi-arch image (linux/amd64 + linux/arm64)
+
+replicaCount: 1
+
+image:
+  # Use the official strapi/strapi image once multi-arch is merged upstream.
+  # Until then, use a custom-built image:
+  #   repository: ghcr.io/XMV-Solutions-GmbH/strapi
+  repository: strapi/strapi
+  pullPolicy: IfNotPresent
+  tag: ""  # defaults to Chart.appVersion
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  create: true
+  annotations: {}
+  name: ""
+
+podAnnotations: {}
+podSecurityContext: {}
+
+securityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
+
+service:
+  type: ClusterIP
+  port: 1337
+
+ingress:
+  enabled: true
+  className: nginx
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+  hosts:
+    - host: cms.example.com
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - secretName: strapi-tls
+      hosts:
+        - cms.example.com
+
+resources:
+  requests:
+    cpu: 250m
+    memory: 512Mi
+  limits:
+    cpu: 1000m
+    memory: 1Gi
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 3
+  targetCPUUtilizationPercentage: 80
+
+nodeSelector: {}
+tolerations: []
+affinity: {}
+
+# ---------------------------------------------------------------------------
+# Strapi application configuration
+# ---------------------------------------------------------------------------
+strapi:
+  # App keys — generate with: node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
+  # Provide as a secret reference (see existingSecret) rather than plain text.
+  appKeys: ""
+  apiTokenSalt: ""
+  adminJwtSecret: ""
+  jwtSecret: ""
+  transferTokenSalt: ""
+
+  # Reference an existing Kubernetes secret containing the above keys.
+  # The secret must have keys: APP_KEYS, API_TOKEN_SALT, ADMIN_JWT_SECRET,
+  # JWT_SECRET, TRANSFER_TOKEN_SALT
+  existingSecret: ""
+
+  # Node environment
+  nodeEnv: production
+
+# ---------------------------------------------------------------------------
+# Database (external PostgreSQL)
+# ---------------------------------------------------------------------------
+database:
+  client: postgres
+  host: ""          # e.g. strapi-rw.cnpg-system.svc.cluster.local
+  port: 5432
+  name: strapi
+  username: strapi
+  ssl: false
+  # Provide password via existingSecret (key: DATABASE_PASSWORD) rather than plain text.
+  password: ""
+  existingSecret: ""
+
+# ---------------------------------------------------------------------------
+# Media / uploads storage (S3-compatible)
+# ---------------------------------------------------------------------------
+uploads:
+  provider: aws-s3   # or: local (PVC), @strapi/provider-upload-local
+  # S3 / MinIO configuration
+  s3:
+    accessKeyId: ""
+    secretAccessKey: ""
+    region: ""               # e.g. nbg1 for Hetzner Object Storage
+    bucket: strapi-media
+    endpoint: ""             # Leave empty for AWS S3; set for MinIO/Hetzner
+    # Provide credentials via existingSecret (keys: S3_ACCESS_KEY_ID, S3_SECRET_ACCESS_KEY)
+    existingSecret: ""
+
+# ---------------------------------------------------------------------------
+# Persistence (only relevant when uploads.provider = local)
+# ---------------------------------------------------------------------------
+persistence:
+  enabled: false
+  storageClass: ""
+  size: 10Gi
+  accessMode: ReadWriteOnce
+
+# ---------------------------------------------------------------------------
+# Liveness / readiness probes
+# ---------------------------------------------------------------------------
+livenessProbe:
+  httpGet:
+    path: /_health
+    port: 1337
+  initialDelaySeconds: 60
+  periodSeconds: 30
+  failureThreshold: 3
+
+readinessProbe:
+  httpGet:
+    path: /_health
+    port: 1337
+  initialDelaySeconds: 30
+  periodSeconds: 10
+  failureThreshold: 3
+
+# ---------------------------------------------------------------------------
+# Extra environment variables (advanced overrides)
+# ---------------------------------------------------------------------------
+extraEnv: []
+# - name: STRAPI_DISABLE_UPDATE_NOTIFICATION
+#   value: "true"
+
+extraEnvFrom: []
+# - secretRef:
+#     name: my-additional-secret

@@ -1,0 +1,22 @@
+apiVersion: v2
+name: strapi
+description: Self-hosted Strapi headless CMS
+type: application
+version: 0.1.0
+appVersion: "5.0.0"
+home: https://strapi.io
+sources:
+  - https://github.com/strapi/strapi
+  - https://github.com/XMV-Solutions-GmbH/strapi-helm-charts
+maintainers:
+  - name: XMV Solutions GmbH
+    url: https://github.com/XMV-Solutions-GmbH
+keywords:
+  - strapi
+  - cms
+  - headless
+  - api
+annotations:
+  artifacthub.io/changes: |
+    - kind: added
+      description: Initial chart release with multi-arch ARM64 support
