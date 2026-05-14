@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Strapi Community Forum
+    url: https://forum.strapi.io
+    about: Questions about Strapi itself (not the Helm chart)
+  - name: Strapi Discord
+    url: https://discord.strapi.io
+    about: Community chat and support

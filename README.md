@@ -1,58 +1,61 @@
 # strapi-helm-charts
 
-Helm chart for self-hosted [Strapi](https://strapi.io) CMS on Kubernetes.
+> [!NOTE]
+> This is a community-maintained Helm chart for Strapi, developed with the
+> goal of contributing it to the official [strapi](https://github.com/strapi)
+> GitHub organisation. Track the upstream discussion at
+> https://github.com/strapi/strapi/discussions/25881
 
-**Status**: Work in progress — being validated on a real ARM64 Kubernetes
-cluster (Hetzner CAX) before proposing as an official chart to the Strapi
-project.
+Helm charts for deploying [Strapi](https://strapi.io) — the leading
+open-source headless CMS — on Kubernetes.
 
-**Intended upstream**: `strapi/helm-charts` (a new repo in the Strapi GitHub
-org). Track the discussion at https://github.com/strapi/strapi/discussions/25881
+## Charts
 
----
+| Chart | Description | Version |
+|---|---|---|
+| [strapi](charts/strapi) | Strapi headless CMS | ![version](https://img.shields.io/github/v/release/XMV-Solutions-GmbH/strapi-helm-charts) |
+
+## Add the Helm repository
+
+```bash
+helm repo add strapi-community https://xmv-solutions-gmbh.github.io/strapi-helm-charts
+helm repo update
+```
+
+## Install
+
+```bash
+helm install my-strapi strapi-community/strapi \
+  --namespace strapi \
+  --create-namespace \
+  --values my-values.yaml
+```
+
+## Prerequisites
+
+- Kubernetes 1.26+
+- Helm 3.10+
+- An external PostgreSQL instance (e.g. [CloudNativePG](https://cloudnative-pg.io/))
+- S3-compatible storage for media uploads (optional but recommended for production)
 
 ## Features
 
-- Works on **linux/amd64** and **linux/arm64** (once the multi-arch base image
-  PR is merged — see https://github.com/XMV-Solutions-GmbH/strapi-docker)
-- External PostgreSQL support (tested with CloudNativePG)
-- S3-compatible media uploads (MinIO, Hetzner Object Storage, AWS S3)
+- Supports **linux/amd64** and **linux/arm64** (Graviton, Hetzner CAX, Apple Silicon)
+- External PostgreSQL (no bundled database)
+- S3-compatible media storage (MinIO, AWS S3, Hetzner Object Storage)
 - Ingress with TLS via cert-manager
-- Secret management via `existingSecret` references (compatible with
-  Sealed Secrets and External Secrets Operator)
+- Secret references compatible with Sealed Secrets and External Secrets Operator
 - HPA-ready
 
-## Quick start (development)
+## Configuration
 
-```bash
-helm install strapi ./charts/strapi \
-  --set strapi.existingSecret=strapi-secrets \
-  --set database.host=strapi-rw.strapi.svc.cluster.local \
-  --set database.existingSecret=strapi-db-secret \
-  --set ingress.hosts[0].host=cms.example.com \
-  --set uploads.s3.bucket=strapi-media \
-  --set uploads.s3.endpoint=https://nbg1.your-objectstorage.com \
-  --set uploads.s3.existingSecret=strapi-s3-secret
-```
-
-## Values reference
-
-See [charts/strapi/values.yaml](charts/strapi/values.yaml) — all values are
-documented inline.
-
-## Validation environment
-
-| Property | Value |
-|---|---|
-| Kubernetes | Talos Linux on Hetzner CAX (ARM64, Ampere Altra) |
-| Strapi version | 5.x |
-| PostgreSQL | CloudNativePG (CNPG) |
-| Media storage | Hetzner Object Storage (S3-compatible) |
-| TLS | cert-manager + Let's Encrypt |
-| Ingress | ingress-nginx |
+See [charts/strapi/values.yaml](charts/strapi/values.yaml) for the full
+list of configurable parameters with inline documentation.
 
 ## Contributing
 
-This chart is being prepared for upstream contribution to the Strapi project.
-Contributions welcome — please open issues or PRs in this repo. Once the
-upstream `strapi/helm-charts` repo exists, this repo will redirect there.
+See [CONTRIBUTING.md](CONTRIBUTING.md).
+
+## License
+
+[MIT](LICENSE)

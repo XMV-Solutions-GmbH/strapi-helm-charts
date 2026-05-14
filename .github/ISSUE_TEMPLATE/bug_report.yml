@@ -1,0 +1,71 @@
+name: Bug Report
+description: Report a bug in the Strapi Helm chart
+labels: ["bug", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a bug. Please fill in as much detail as possible.
+
+  - type: input
+    id: chart-version
+    attributes:
+      label: Chart version
+      placeholder: "e.g. 0.3.1"
+    validations:
+      required: true
+
+  - type: input
+    id: strapi-version
+    attributes:
+      label: Strapi version (appVersion)
+      placeholder: "e.g. 5.2.0"
+    validations:
+      required: true
+
+  - type: input
+    id: kubernetes-version
+    attributes:
+      label: Kubernetes version
+      placeholder: "e.g. 1.30 (Talos), 1.29 (EKS)"
+    validations:
+      required: true
+
+  - type: input
+    id: helm-version
+    attributes:
+      label: Helm version
+      placeholder: "e.g. 3.14.0"
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Bug description
+      description: What happened? What did you expect to happen?
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. helm install ... --set ...
+        2. kubectl get pods ...
+        3. Error observed: ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: values
+    attributes:
+      label: Relevant values.yaml (redact secrets)
+      render: yaml
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant logs or error messages
+      render: shell
