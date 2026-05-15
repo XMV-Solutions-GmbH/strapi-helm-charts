@@ -1,0 +1,160 @@
+suite: deployment rendering
+templates:
+  - deployment.yaml
+release:
+  name: test-strapi
+  namespace: test-ns
+
+tests:
+  - it: renders a Deployment with the expected name and labels
+    asserts:
+      - isKind:
+          of: Deployment
+      - equal:
+          path: metadata.name
+          value: test-strapi
+      - equal:
+          path: metadata.labels["app.kubernetes.io/name"]
+          value: strapi
+      - equal:
+          path: metadata.labels["app.kubernetes.io/instance"]
+          value: test-strapi
+
+  - it: defaults to 1 replica
+    asserts:
+      - equal:
+          path: spec.replicas
+          value: 1
+
+  - it: respects replicaCount override
+    set:
+      replicaCount: 3
+    asserts:
+      - equal:
+          path: spec.replicas
+          value: 3
+
+  - it: pins container port to 1337 (Strapi default)
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].ports[0].containerPort
+          value: 1337
+
+  - it: sets NODE_ENV from values.strapi.nodeEnv
+    set:
+      strapi.nodeEnv: development
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: NODE_ENV
+            value: development
+
+  - it: uses image.tag if set, otherwise Chart.appVersion
+    set:
+      image.repository: my/strapi
+      image.tag: "5.10.0"
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].image
+          value: my/strapi:5.10.0
+
+  - it: passes resources block through verbatim
+    set:
+      resources:
+        requests:
+          cpu: 500m
+          memory: 1Gi
+        limits:
+          cpu: "2"
+          memory: 2Gi
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].resources.requests.cpu
+          value: 500m
+      - equal:
+          path: spec.template.spec.containers[0].resources.limits.memory
+          value: 2Gi
+
+  - it: mounts uploads volume at default path when persistence enabled + provider=local
+    set:
+      persistence.enabled: true
+      uploads.provider: local
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].volumeMounts[0].name
+          value: uploads
+      - equal:
+          path: spec.template.spec.containers[0].volumeMounts[0].mountPath
+          value: /opt/app/public/uploads
+
+  - it: respects persistence.mountPath override for custom image WORKDIR
+    set:
+      persistence.enabled: true
+      persistence.mountPath: /app/public/uploads
+      uploads.provider: local
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].volumeMounts[0].mountPath
+          value: /app/public/uploads
+
+  - it: omits uploads volumeMounts when uploads.provider=aws-s3
+    set:
+      uploads.provider: aws-s3
+      persistence.enabled: false
+    asserts:
+      - isNull:
+          path: spec.template.spec.containers[0].volumeMounts
+
+  - it: injects S3 environment variables when uploads.provider=aws-s3
+    set:
+      uploads.provider: aws-s3
+      uploads.s3.accessKeyId: AKIAEXAMPLE
+      uploads.s3.secretAccessKey: example-secret
+      uploads.s3.region: nbg1
+      uploads.s3.bucket: media-bucket
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: AWS_REGION
+            value: nbg1
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: AWS_BUCKET
+            value: media-bucket
+
+  - it: reads DATABASE_PASSWORD from existingSecret when set
+    set:
+      database.existingSecret: my-pg-secret
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: DATABASE_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: my-pg-secret
+                key: DATABASE_PASSWORD
+
+  - it: reads strapi keys from existingSecret when set
+    set:
+      strapi.existingSecret: my-strapi-secret
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: APP_KEYS
+            valueFrom:
+              secretKeyRef:
+                name: my-strapi-secret
+                key: APP_KEYS
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: JWT_SECRET
+            valueFrom:
+              secretKeyRef:
+                name: my-strapi-secret
+                key: JWT_SECRET

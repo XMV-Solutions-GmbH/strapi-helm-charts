@@ -125,6 +125,12 @@ persistence:
   storageClass: ""
   size: 10Gi
   accessMode: ReadWriteOnce
+  # Where the uploads volume is mounted inside the container. The default
+  # matches the WORKDIR used by the strapi-community/strapi-tool-dockerize
+  # production template. If your custom image places the Strapi project at
+  # a different path (e.g. /app), override this accordingly:
+  #   helm install ... --set persistence.mountPath=/app/public/uploads
+  mountPath: /opt/app/public/uploads
 
 # ---------------------------------------------------------------------------
 # Liveness / readiness probes

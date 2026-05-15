@@ -15,7 +15,7 @@ keywords:
   - api
 annotations:
   artifacthub.io/category: integration-delivery
-  artifacthub.io/license: MIT
+  artifacthub.io/license: Apache-2.0 OR MIT
   artifacthub.io/changes: |
     - kind: added
       description: Initial chart release with multi-arch ARM64 support (linux/amd64, linux/arm64)

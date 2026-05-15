@@ -139,7 +139,7 @@ spec:
           {{- if and .Values.persistence.enabled (eq .Values.uploads.provider "local") }}
           volumeMounts:
             - name: uploads
-              mountPath: /opt/app/public/uploads
+              mountPath: {{ .Values.persistence.mountPath | default "/opt/app/public/uploads" }}
           {{- end }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}

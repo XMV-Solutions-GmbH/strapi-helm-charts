@@ -1,0 +1,66 @@
+suite: ingress rendering
+templates:
+  - ingress.yaml
+release:
+  name: test-strapi
+  namespace: test-ns
+
+tests:
+  - it: does not render Ingress when ingress.enabled=false
+    set:
+      ingress.enabled: false
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  - it: renders Ingress when ingress.enabled=true with default host
+    set:
+      ingress.enabled: true
+    asserts:
+      - hasDocuments:
+          count: 1
+      - isKind:
+          of: Ingress
+      - equal:
+          path: spec.rules[0].host
+          value: cms.example.com
+
+  - it: honours custom host + multiple paths
+    set:
+      ingress.enabled: true
+      ingress.hosts:
+        - host: cms.acme.dev
+          paths:
+            - path: /
+              pathType: Prefix
+            - path: /api
+              pathType: Prefix
+    asserts:
+      - equal:
+          path: spec.rules[0].host
+          value: cms.acme.dev
+      - equal:
+          path: spec.rules[0].http.paths[1].path
+          value: /api
+
+  - it: emits TLS block when ingress.tls is set
+    set:
+      ingress.enabled: true
+      ingress.tls:
+        - secretName: strapi-tls
+          hosts:
+            - cms.acme.dev
+    asserts:
+      - equal:
+          path: spec.tls[0].secretName
+          value: strapi-tls
+
+  - it: applies cert-manager annotation when configured
+    set:
+      ingress.enabled: true
+      ingress.annotations:
+        cert-manager.io/cluster-issuer: letsencrypt-prod
+    asserts:
+      - equal:
+          path: metadata.annotations["cert-manager.io/cluster-issuer"]
+          value: letsencrypt-prod

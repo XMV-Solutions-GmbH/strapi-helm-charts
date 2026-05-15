@@ -1,0 +1,56 @@
+suite: PVC rendering
+templates:
+  - pvc.yaml
+release:
+  name: test-strapi
+  namespace: test-ns
+
+tests:
+  - it: does not render PVC when persistence.enabled=false
+    set:
+      persistence.enabled: false
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  - it: does not render PVC when persistence is enabled but uploads.provider=aws-s3
+    set:
+      persistence.enabled: true
+      uploads.provider: aws-s3
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  - it: renders PVC when persistence.enabled=true and uploads.provider=local
+    set:
+      persistence.enabled: true
+      uploads.provider: local
+    asserts:
+      - hasDocuments:
+          count: 1
+      - isKind:
+          of: PersistentVolumeClaim
+
+  - it: respects custom size + accessMode
+    set:
+      persistence.enabled: true
+      uploads.provider: local
+      persistence.size: 50Gi
+      persistence.accessMode: ReadWriteMany
+    asserts:
+      - equal:
+          path: spec.resources.requests.storage
+          value: 50Gi
+      - equal:
+          path: spec.accessModes[0]
+          value: ReadWriteMany
+
+  - it: applies storageClass when set
+    set:
+      persistence.enabled: true
+      uploads.provider: local
+      persistence.storageClass: fast-ssd
+    asserts:
+      - equal:
+          path: spec.storageClassName
+          value: fast-ssd

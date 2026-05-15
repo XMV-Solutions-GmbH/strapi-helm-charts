@@ -1,0 +1,38 @@
+suite: service rendering
+templates:
+  - service.yaml
+release:
+  name: test-strapi
+  namespace: test-ns
+
+tests:
+  - it: renders a Service with default ClusterIP type + port 1337
+    asserts:
+      - isKind:
+          of: Service
+      - equal:
+          path: spec.type
+          value: ClusterIP
+      - equal:
+          path: spec.ports[0].port
+          value: 1337
+      - equal:
+          path: spec.ports[0].targetPort
+          value: http
+
+  - it: honours service.type override (e.g. NodePort)
+    set:
+      service.type: NodePort
+    asserts:
+      - equal:
+          path: spec.type
+          value: NodePort
+
+  - it: selects pods via app.kubernetes.io/name + instance labels
+    asserts:
+      - equal:
+          path: spec.selector["app.kubernetes.io/name"]
+          value: strapi
+      - equal:
+          path: spec.selector["app.kubernetes.io/instance"]
+          value: test-strapi
