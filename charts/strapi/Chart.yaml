@@ -5,9 +5,14 @@ type: application
 version: 0.1.0
 appVersion: "5.0.0"
 home: https://strapi.io
+icon: https://strapi.io/assets/strapi-logo-dark.svg
 sources:
   - https://github.com/strapi/strapi
   - https://github.com/XMV-Solutions-GmbH/strapi-helm-charts
+maintainers:
+  - name: XMV Solutions GmbH
+    email: oss@xmv.de
+    url: https://xmv.de/en/oss/
 keywords:
   - strapi
   - cms
