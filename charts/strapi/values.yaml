@@ -8,12 +8,21 @@
 replicaCount: 1
 
 image:
-  # Use the official strapi/strapi image once multi-arch is merged upstream.
-  # Until then, use a custom-built image:
-  #   repository: ghcr.io/XMV-Solutions-GmbH/strapi
-  repository: strapi/strapi
+  # The official strapi/strapi Docker Hub image is v3-only — strapi/strapi-docker
+  # was archived in 2022 (see https://github.com/strapi/strapi-docker README) and
+  # v4+ Docker images live outside the strapi/ org. Until an official multi-arch
+  # v5 image is published, this chart defaults to a community-built multi-arch
+  # build maintained at github.com/XMV-Solutions-GmbH/strapi-helm-charts.
+  #
+  # Override `repository` + `tag` to point at your own Strapi image if you
+  # build your own — see CONTRIBUTING.md "Building your own image".
+  repository: ghcr.io/xmv-solutions-gmbh/strapi
   pullPolicy: IfNotPresent
-  tag: ""  # defaults to Chart.appVersion
+  # The community build publishes `latest` + per-commit `sha-<short>` tags.
+  # Pin to a specific commit SHA for production rollouts; `latest` is fine for
+  # development. Once a proper Strapi-version-tagged release pipeline lands,
+  # this default will become Chart.appVersion-derived.
+  tag: "latest"
 
 imagePullSecrets: []
 nameOverride: ""
@@ -125,12 +134,13 @@ persistence:
   storageClass: ""
   size: 10Gi
   accessMode: ReadWriteOnce
-  # Where the uploads volume is mounted inside the container. The default
-  # matches the WORKDIR used by the strapi-community/strapi-tool-dockerize
-  # production template. If your custom image places the Strapi project at
-  # a different path (e.g. /app), override this accordingly:
-  #   helm install ... --set persistence.mountPath=/app/public/uploads
-  mountPath: /opt/app/public/uploads
+  # Where the uploads volume is mounted inside the container.
+  # Default matches the WORKDIR of the chart's default image
+  # (ghcr.io/xmv-solutions-gmbh/strapi → /app). If you override `image`
+  # with a Strapi build produced by strapi-community/strapi-tool-dockerize
+  # (WORKDIR /opt/app) or any other convention, set this to match:
+  #   helm install ... --set persistence.mountPath=/opt/app/public/uploads
+  mountPath: /app/public/uploads
 
 # ---------------------------------------------------------------------------
 # Liveness / readiness probes

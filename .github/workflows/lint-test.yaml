@@ -68,6 +68,69 @@ jobs:
           name: helm-unittest-report
           path: test-output/
 
+  kubeconform:
+    name: kubeconform
+    runs-on: ubuntu-latest
+    needs: [lint, unittest]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: v3.16.3
+
+      - name: Install kubeconform
+        run: |
+          curl -sSLO https://github.com/yannh/kubeconform/releases/download/v0.6.7/kubeconform-linux-amd64.tar.gz
+          tar -xf kubeconform-linux-amd64.tar.gz
+          sudo mv kubeconform /usr/local/bin/
+
+      - name: Render chart + validate against K8s schema (default values)
+        run: |
+          helm template test-release charts/strapi \
+            --set database.host=postgres.example.com \
+            --set strapi.appKeys=dummy \
+            --set strapi.apiTokenSalt=dummy \
+            --set strapi.adminJwtSecret=dummy \
+            --set strapi.jwtSecret=dummy \
+            --set strapi.transferTokenSalt=dummy \
+            --set uploads.s3.accessKeyId=dummy \
+            --set uploads.s3.secretAccessKey=dummy \
+            --set uploads.s3.region=eu \
+            > /tmp/rendered.yaml
+          kubeconform -strict -summary -kubernetes-version 1.31.0 -schema-location default /tmp/rendered.yaml
+
+      - name: Render chart + validate (local persistence variant)
+        run: |
+          helm template test-release charts/strapi \
+            --set database.host=postgres.example.com \
+            --set strapi.existingSecret=strapi-keys \
+            --set uploads.provider=local \
+            --set persistence.enabled=true \
+            > /tmp/rendered.yaml
+          kubeconform -strict -summary -kubernetes-version 1.31.0 -schema-location default /tmp/rendered.yaml
+
+      - name: Render chart + validate (custom WORKDIR mountPath override)
+        run: |
+          helm template test-release charts/strapi \
+            --set database.host=postgres.example.com \
+            --set strapi.existingSecret=strapi-keys \
+            --set uploads.provider=local \
+            --set persistence.enabled=true \
+            --set persistence.mountPath=/app/public/uploads \
+            > /tmp/rendered.yaml
+          kubeconform -strict -summary -kubernetes-version 1.31.0 -schema-location default /tmp/rendered.yaml
+
+      - name: Render chart + validate (ingress disabled)
+        run: |
+          helm template test-release charts/strapi \
+            --set database.host=postgres.example.com \
+            --set strapi.existingSecret=strapi-keys \
+            --set ingress.enabled=false \
+            > /tmp/rendered.yaml
+          kubeconform -strict -summary -kubernetes-version 1.31.0 -schema-location default /tmp/rendered.yaml
+
   install:
     name: chart-install (kind)
     runs-on: ubuntu-latest
@@ -102,6 +165,18 @@ jobs:
         if: steps.list-changed.outputs.changed == 'true'
         uses: helm/kind-action@v1.10.0
 
-      - name: ct install (kind smoke-test)
+      - name: Deploy ephemeral PostgreSQL (Bitnami) for the smoke-test
+        if: steps.list-changed.outputs.changed == 'true'
+        run: |
+          helm repo add bitnami https://charts.bitnami.com/bitnami
+          helm install ci-postgres bitnami/postgresql \
+            --namespace default \
+            --set auth.username=strapi \
+            --set auth.password=ci-test-password \
+            --set auth.database=strapi \
+            --set primary.persistence.enabled=false \
+            --wait --timeout 4m
+
+      - name: ct install (kind smoke-test, uses charts/strapi/ci/*.yaml)
         if: steps.list-changed.outputs.changed == 'true'
         run: ct install --target-branch ${{ github.event.repository.default_branch }}

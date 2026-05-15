@@ -1,0 +1,70 @@
+# CI smoke-test values for the kind-cluster install job.
+# Pairs with .github/workflows/lint-test.yaml which deploys an ephemeral
+# Bitnami PostgreSQL into the same kind cluster before running ct install,
+# so the chart's REAL Strapi image gets to talk to a REAL Postgres — no
+# substitute container, no fake DB.
+
+# Use the rolling-latest community build of Strapi v5 (public GHCR image).
+image:
+  repository: ghcr.io/xmv-solutions-gmbh/strapi
+  tag: latest
+  pullPolicy: Always
+
+# Strapi keys — random per CI run is fine, no data persists between jobs.
+strapi:
+  appKeys: "ci-app-key-1,ci-app-key-2"
+  apiTokenSalt: "ci-api-token-salt-xxxxxxxxxxxxxxxxxxxxxxxx"
+  adminJwtSecret: "ci-admin-jwt-secret-xxxxxxxxxxxxxxxxxxxx"
+  jwtSecret: "ci-jwt-secret-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+  transferTokenSalt: "ci-transfer-token-salt-xxxxxxxxxxxxx"
+
+# Point at the ephemeral Postgres that the CI workflow installs via the
+# Bitnami chart at release name `ci-postgres` in namespace `default`.
+database:
+  client: postgres
+  host: ci-postgres-postgresql.default.svc.cluster.local
+  port: 5432
+  name: strapi
+  username: strapi
+  password: ci-test-password
+  ssl: false
+
+# Local PVC instead of S3 — keeps the test self-contained.
+uploads:
+  provider: local
+persistence:
+  enabled: true
+  size: 1Gi
+  # Strapi v5 community image runs from WORKDIR /app, not the upstream
+  # strapi-tool-dockerize /opt/app convention. See README "Custom image / WORKDIR".
+  mountPath: /app/public/uploads
+
+# Ingress is irrelevant for the smoke-test — kind has no cert-manager.
+ingress:
+  enabled: false
+
+# Strapi first-boot on a fresh database runs migrations + admin-build;
+# give probes enough delay to ride that out on a CI runner.
+livenessProbe:
+  httpGet:
+    path: /_health
+    port: 1337
+  initialDelaySeconds: 180
+  periodSeconds: 30
+  failureThreshold: 10
+readinessProbe:
+  httpGet:
+    path: /_health
+    port: 1337
+  initialDelaySeconds: 120
+  periodSeconds: 15
+  failureThreshold: 10
+
+# Stay light on the kind runner.
+resources:
+  requests:
+    cpu: 200m
+    memory: 512Mi
+  limits:
+    cpu: 1000m
+    memory: 1Gi
