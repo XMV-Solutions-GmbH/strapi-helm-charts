@@ -86,17 +86,17 @@ tests:
           value: uploads
       - equal:
           path: spec.template.spec.containers[0].volumeMounts[0].mountPath
-          value: /opt/app/public/uploads
+          value: /app/public/uploads
 
-  - it: respects persistence.mountPath override for custom image WORKDIR
+  - it: respects persistence.mountPath override for non-default image WORKDIR
     set:
       persistence.enabled: true
-      persistence.mountPath: /app/public/uploads
+      persistence.mountPath: /opt/app/public/uploads
       uploads.provider: local
     asserts:
       - equal:
           path: spec.template.spec.containers[0].volumeMounts[0].mountPath
-          value: /app/public/uploads
+          value: /opt/app/public/uploads
 
   - it: omits uploads volumeMounts when uploads.provider=aws-s3
     set:
