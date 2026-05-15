@@ -1,0 +1,59 @@
+# CI smoke-test values — not representative of production use.
+# Overrides the default image (not yet publicly available on Docker Hub) with a
+# lightweight non-root HTTP server so the pod can reach Ready state in kind.
+#
+# ct install picks up every file under ci/ and runs one helm install per file.
+
+image:
+  repository: nginxinc/nginx-unprivileged
+  tag: stable-alpine
+  pullPolicy: IfNotPresent
+
+# nginx-unprivileged runs as UID 101
+securityContext:
+  runAsNonRoot: true
+  runAsUser: 101
+
+# nginx-unprivileged listens on 8080, not 1337
+livenessProbe:
+  httpGet:
+    path: /
+    port: 8080
+  initialDelaySeconds: 5
+  periodSeconds: 10
+  failureThreshold: 3
+
+readinessProbe:
+  httpGet:
+    path: /
+    port: 8080
+  initialDelaySeconds: 5
+  periodSeconds: 5
+  failureThreshold: 3
+
+ingress:
+  enabled: false
+
+strapi:
+  appKeys: "ci-test-appkey"
+  apiTokenSalt: "ci-test-api-token-salt"
+  adminJwtSecret: "ci-test-admin-jwt-secret"
+  jwtSecret: "ci-test-jwt-secret"
+  transferTokenSalt: "ci-test-transfer-token-salt"
+
+database:
+  host: "ci-postgres.default.svc.cluster.local"
+  name: strapi
+  username: strapi
+  password: "ci-test-password"
+
+uploads:
+  provider: local
+
+resources:
+  requests:
+    cpu: 10m
+    memory: 32Mi
+  limits:
+    cpu: 100m
+    memory: 64Mi
