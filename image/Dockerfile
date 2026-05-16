@@ -36,6 +36,26 @@ COPY . .
 ENV NODE_ENV=production
 RUN npm run build
 
+# Strapi v5's `strapi build` compiles TypeScript and bundles the admin
+# panel, but does NOT propagate non-TS assets — most importantly the
+# per-content-type schema.json files under src/api/*/content-types/ —
+# into dist/. Strapi's api loader (@strapi/core/dist/loaders/apis.js)
+# walks strapi.dirs.dist.api, so in production any schema left behind
+# in src/ is invisible. Route factories then register UIDs the
+# content-type registry can't resolve, and start fails with
+#
+#   TypeError: Cannot read properties of undefined (reading 'kind')
+#   at isSingleType (… content-types.js)
+#
+# This rsync mirrors every JSON file under src/ into dist/src/. Only
+# matters once you (or a downstream layer) actually add content-types;
+# this base image ships none, so the rsync is a no-op until then.
+# Keeping it here means the downstream-layer recipe stays a one-line
+# `COPY src/api ./src/api` instead of "and remember to also re-run a
+# build-step nobody documents".
+RUN apk add --no-cache rsync && \
+    rsync -a --include='*/' --include='*.json' --exclude='*' src/ dist/src/
+
 # ── stage 2: production runtime ─────────────────────────────────────────────
 FROM node:22-alpine
 
