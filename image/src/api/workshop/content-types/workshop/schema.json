@@ -1,0 +1,36 @@
+{
+  "kind": "singleType",
+  "collectionName": "workshop",
+  "info": {
+    "singularName": "workshop",
+    "pluralName": "workshops",
+    "displayName": "Workshop",
+    "description": "Homepage workshop section. 1:1 with website's WorkshopContent interface."
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "heading": {
+      "type": "string",
+      "required": true
+    },
+    "subtitle": {
+      "type": "text",
+      "required": true
+    },
+    "outcomeHeading": {
+      "type": "string",
+      "required": true
+    },
+    "steps": {
+      "type": "json",
+      "required": true
+    },
+    "outcomes": {
+      "type": "json",
+      "required": true
+    }
+  }
+}
