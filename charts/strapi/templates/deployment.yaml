@@ -129,6 +129,55 @@ spec:
               value: {{ .Values.uploads.s3.endpoint | quote }}
             {{- end }}
             {{- end }}
+            {{- if .Values.sso.enabled }}
+            # ── strapi-plugin-sso (Azure AD / Entra ID) ──
+            - name: STRAPI_SSO_ENABLED
+              value: "true"
+            - name: AZUREAD_OAUTH_REDIRECT_URI
+              value: {{ .Values.sso.azureAd.redirectUri | quote }}
+            - name: AZUREAD_SCOPE
+              value: {{ .Values.sso.azureAd.scope | default "openid profile email" | quote }}
+            - name: AZUREAD_TENANT_ID
+              {{- if .Values.sso.azureAd.existingSecret }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.sso.azureAd.existingSecret }}
+                  key: AZUREAD_TENANT_ID
+              {{- else }}
+              value: {{ .Values.sso.azureAd.tenantId | quote }}
+              {{- end }}
+            - name: AZUREAD_OAUTH_CLIENT_ID
+              {{- if .Values.sso.azureAd.existingSecret }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.sso.azureAd.existingSecret }}
+                  key: AZUREAD_OAUTH_CLIENT_ID
+              {{- else }}
+              value: {{ .Values.sso.azureAd.clientId | quote }}
+              {{- end }}
+            - name: AZUREAD_OAUTH_CLIENT_SECRET
+              {{- if .Values.sso.azureAd.existingSecret }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.sso.azureAd.existingSecret }}
+                  key: AZUREAD_OAUTH_CLIENT_SECRET
+              {{- else }}
+              value: {{ .Values.sso.azureAd.clientSecret | quote }}
+              {{- end }}
+            {{- end }}
+            {{- if .Values.bootstrapSuperadmin.email }}
+            # ── bootstrap-superadmin (src/index.ts) ──
+            - name: STRAPI_BOOTSTRAP_SUPERADMIN_EMAIL
+              value: {{ .Values.bootstrapSuperadmin.email | quote }}
+            {{- if .Values.bootstrapSuperadmin.firstname }}
+            - name: STRAPI_BOOTSTRAP_SUPERADMIN_FIRSTNAME
+              value: {{ .Values.bootstrapSuperadmin.firstname | quote }}
+            {{- end }}
+            {{- if .Values.bootstrapSuperadmin.lastname }}
+            - name: STRAPI_BOOTSTRAP_SUPERADMIN_LASTNAME
+              value: {{ .Values.bootstrapSuperadmin.lastname | quote }}
+            {{- end }}
+            {{- end }}
             {{- with .Values.extraEnv }}
             {{- toYaml . | nindent 12 }}
             {{- end }}
