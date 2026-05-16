@@ -3,7 +3,7 @@
   "collectionName": "feature_flags",
   "info": {
     "singularName": "feature-flags",
-    "pluralName": "feature-flags",
+    "pluralName": "feature-flags-set",
     "displayName": "Feature Flags",
     "description": "Editor-controlled visibility toggles. Read at request time by the website (revalidate: 60). Fail-closed on Strapi outages (= all false)."
   },
