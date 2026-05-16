@@ -32,3 +32,24 @@ jobs:
           skip_existing: true
         env:
           CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+
+      - name: Trigger ArtifactHub re-index
+        env:
+          ARTIFACTHUB_API_KEY_ID: ${{ secrets.ARTIFACTHUB_API_KEY_ID }}
+          ARTIFACTHUB_API_KEY_SECRET: ${{ secrets.ARTIFACTHUB_API_KEY_SECRET }}
+        run: |
+          status=$(curl -fsSL -o /tmp/ah_get.json -w "%{http_code}" \
+            -H "X-API-KEY-ID: ${ARTIFACTHUB_API_KEY_ID}" \
+            -H "X-API-KEY-SECRET: ${ARTIFACTHUB_API_KEY_SECRET}" \
+            "https://artifacthub.io/api/v1/repositories/strapi-xmv")
+          if [[ "$status" != "200" ]]; then
+            echo "GET failed (HTTP $status) — skipping re-index trigger" && exit 0
+          fi
+          status=$(curl -fsSL -o /dev/null -w "%{http_code}" \
+            -X PUT \
+            -H "Content-Type: application/json" \
+            -H "X-API-KEY-ID: ${ARTIFACTHUB_API_KEY_ID}" \
+            -H "X-API-KEY-SECRET: ${ARTIFACTHUB_API_KEY_SECRET}" \
+            -d @/tmp/ah_get.json \
+            "https://artifacthub.io/api/v1/repositories/strapi-xmv")
+          echo "ArtifactHub re-index triggered (HTTP $status)"
