@@ -4,6 +4,11 @@ name: build-image
 # ghcr.io/xmv-solutions-gmbh/strapi. The chart's default `image.repository`
 # points at the resulting package; the package is linked to this repo so it
 # inherits public visibility.
+#
+# Native-arch matrix instead of QEMU: amd64 on ubuntu-latest, arm64 on
+# ubuntu-24.04-arm. Each job builds + pushes a per-arch image to GHCR;
+# a final manifest job stitches them into the multi-arch tag set. Cuts
+# total build time from ~30 min (QEMU emulation of npm install) to <8 min.
 
 on:
   push:
@@ -27,16 +32,25 @@ permissions:
   packages: write
 
 jobs:
+  # ──────────────────────────────────────────────────────────────────────────
+  # Per-arch build + push. Each job pushes its image by digest only; the
+  # manifest job below assembles the human-readable tags from the digests.
+  # ──────────────────────────────────────────────────────────────────────────
   build:
-    name: build-and-push
-    runs-on: ubuntu-latest
+    name: build-and-push (${{ matrix.platform.arch }})
+    runs-on: ${{ matrix.platform.runs-on }}
+    strategy:
+      fail-fast: false
+      matrix:
+        platform:
+          - arch: amd64
+            runs-on: ubuntu-latest
+            docker-platform: linux/amd64
+          - arch: arm64
+            runs-on: ubuntu-24.04-arm
+            docker-platform: linux/arm64
     steps:
       - uses: actions/checkout@v4
-
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-        with:
-          platforms: linux/amd64,linux/arm64
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -49,7 +63,65 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Extract metadata
+      - name: Build and push (${{ matrix.platform.arch }})
+        id: build
+        uses: docker/build-push-action@v6
+        with:
+          context: ./image
+          file: ./image/Dockerfile
+          platforms: ${{ matrix.platform.docker-platform }}
+          push: ${{ github.event_name != 'pull_request' }}
+          # Push as digest only; the manifest job below assembles
+          # human-readable tags from the digests of each arch.
+          outputs: type=image,name=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }},push-by-digest=true,name-canonical=true,push=${{ github.event_name != 'pull_request' }}
+          cache-from: type=gha,scope=${{ matrix.platform.arch }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.platform.arch }}
+          provenance: false
+
+      - name: Export digest
+        if: github.event_name != 'pull_request'
+        run: |
+          mkdir -p /tmp/digests
+          digest="${{ steps.build.outputs.digest }}"
+          touch "/tmp/digests/${digest#sha256:}"
+
+      - name: Upload digest
+        if: github.event_name != 'pull_request'
+        uses: actions/upload-artifact@v4
+        with:
+          name: digests-${{ matrix.platform.arch }}
+          path: /tmp/digests/*
+          if-no-files-found: error
+          retention-days: 1
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # Merge the per-arch digests into a multi-arch manifest under the
+  # human-readable tags (latest, sha-<short>, branch-<name>, …).
+  # ──────────────────────────────────────────────────────────────────────────
+  manifest:
+    name: multi-arch manifest
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.event_name != 'pull_request'
+    steps:
+      - name: Download digests
+        uses: actions/download-artifact@v4
+        with:
+          path: /tmp/digests
+          pattern: digests-*
+          merge-multiple: true
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata (tags)
         id: meta
         uses: docker/metadata-action@v5
         with:
@@ -65,15 +137,16 @@ jobs:
             org.opencontainers.image.description=Production-ready Strapi v5 multi-arch base image (linux/amd64 + linux/arm64). Companion to the strapi Helm chart in this repo.
             org.opencontainers.image.licenses=MIT OR Apache-2.0
 
-      - name: Build and push
-        uses: docker/build-push-action@v6
-        with:
-          context: ./image
-          file: ./image/Dockerfile
-          platforms: linux/amd64,linux/arm64
-          push: ${{ github.event_name != 'pull_request' }}
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-          provenance: false
+      - name: Create + push manifest
+        working-directory: /tmp/digests
+        run: |
+          set -euo pipefail
+          DIGEST_REFS=$(printf '${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}@sha256:%s ' *)
+          TAG_FLAGS=$(jq -cr '.tags | map("-t " + .) | join(" ")' <<< '${{ steps.meta.outputs.json }}')
+          echo "tags: $TAG_FLAGS"
+          echo "digests: $DIGEST_REFS"
+          docker buildx imagetools create $TAG_FLAGS $DIGEST_REFS
+
+      - name: Inspect
+        run: |
+          docker buildx imagetools inspect ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest || true
