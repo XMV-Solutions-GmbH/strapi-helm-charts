@@ -10,9 +10,9 @@ sources:
   - https://github.com/strapi/strapi
   - https://github.com/XMV-Solutions-GmbH/strapi-helm-charts
 maintainers:
-  - name: XMV Solutions GmbH
+  - name: XMV-Solutions-GmbH
     email: oss@xmv.de
-    url: https://xmv.de/en/oss/
+    url: https://github.com/XMV-Solutions-GmbH
 keywords:
   - strapi
   - cms
