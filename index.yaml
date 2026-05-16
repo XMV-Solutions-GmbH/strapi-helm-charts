@@ -4,6 +4,36 @@ entries:
   - annotations:
       artifacthub.io/category: integration-delivery
       artifacthub.io/changes: |
+        - kind: fixed
+          description: Default image corrected to ghcr.io/xmv-solutions-gmbh/strapi:latest; README added for ArtifactHub display
+      artifacthub.io/license: Apache-2.0 OR MIT
+    apiVersion: v2
+    appVersion: 5.0.0
+    created: "2026-05-16T11:11:40.858246205Z"
+    description: Self-hosted Strapi headless CMS
+    digest: 1d42dff5a1c38ce1987998ad4dd5b0df6960f9eaa41255a5cab3b4592e5aae9c
+    home: https://strapi.io
+    icon: https://strapi.io/assets/strapi-logo-dark.svg
+    keywords:
+    - strapi
+    - cms
+    - headless
+    - api
+    maintainers:
+    - email: oss@xmv.de
+      name: XMV-Solutions-GmbH
+      url: https://github.com/XMV-Solutions-GmbH
+    name: strapi
+    sources:
+    - https://github.com/strapi/strapi
+    - https://github.com/XMV-Solutions-GmbH/strapi-helm-charts
+    type: application
+    urls:
+    - https://github.com/XMV-Solutions-GmbH/strapi-helm-charts/releases/download/strapi-0.1.1/strapi-0.1.1.tgz
+    version: 0.1.1
+  - annotations:
+      artifacthub.io/category: integration-delivery
+      artifacthub.io/changes: |
         - kind: added
           description: Initial chart release with multi-arch ARM64 support (linux/amd64, linux/arm64)
       artifacthub.io/license: Apache-2.0 OR MIT
@@ -31,4 +61,4 @@ entries:
     urls:
     - https://github.com/XMV-Solutions-GmbH/strapi-helm-charts/releases/download/strapi-0.1.0/strapi-0.1.0.tgz
     version: 0.1.0
-generated: "2026-05-15T21:17:28.96047418Z"
+generated: "2026-05-16T11:11:40.858263337Z"
