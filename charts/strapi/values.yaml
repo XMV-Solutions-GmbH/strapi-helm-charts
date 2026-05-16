@@ -162,6 +162,49 @@ readinessProbe:
   failureThreshold: 3
 
 # ---------------------------------------------------------------------------
+# Single Sign-On for the admin panel (via strapi-plugin-sso)
+# ---------------------------------------------------------------------------
+# Off by default — Strapi Community Edition has no built-in admin SSO,
+# so we ship the community plugin in the image and toggle it via
+# STRAPI_SSO_ENABLED. When `sso.enabled: true`, populate the Azure-AD
+# block with the Entra App-Registration details. Use `existingSecret`
+# (recommended) to keep secrets out of git.
+sso:
+  enabled: false
+
+  azureAd:
+    # OIDC callback Strapi exposes; must match the redirect URI you set
+    # on the Entra App Registration.
+    redirectUri: "https://cms.example.com/strapi-plugin-sso/azuread/callback"
+
+    # `openid profile email` is the standard Strapi-plugin-sso scope
+    # set — it gets the email + name fields the plugin needs to
+    # find/create a Strapi user.
+    scope: "openid profile email"
+
+    # Option A — read from an existing Secret. The Secret must have
+    # keys: AZUREAD_TENANT_ID, AZUREAD_OAUTH_CLIENT_ID,
+    # AZUREAD_OAUTH_CLIENT_SECRET. Recommended for production.
+    existingSecret: ""
+
+    # Option B — values in chart (only for local dev / testing).
+    tenantId: ""
+    clientId: ""
+    clientSecret: ""
+
+# ---------------------------------------------------------------------------
+# Bootstrap super-admin (env-driven, idempotent)
+# ---------------------------------------------------------------------------
+# Provisions a strapi-super-admin user with the given email on first
+# boot if no user with that email exists. The throwaway password is
+# discarded — log in via SSO (preferred) or use the forgot-password
+# flow. Idempotent: re-deploys are a no-op once the user exists.
+bootstrapSuperadmin:
+  email: ""
+  firstname: ""
+  lastname: ""
+
+# ---------------------------------------------------------------------------
 # Extra environment variables (advanced overrides)
 # ---------------------------------------------------------------------------
 extraEnv: []
