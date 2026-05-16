@@ -1,0 +1,24 @@
+{
+  "kind": "singleType",
+  "collectionName": "client_logos",
+  "info": {
+    "singularName": "client-logos",
+    "pluralName": "client-logos-set",
+    "displayName": "Client Logos",
+    "description": "Homepage client-logos slider (\"Vertrauen durch Erfahrung\"). Gated by feature-flags.client_logos_section_enabled."
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "heading": {
+      "type": "string",
+      "required": true
+    },
+    "logos": {
+      "type": "json",
+      "required": true
+    }
+  }
+}

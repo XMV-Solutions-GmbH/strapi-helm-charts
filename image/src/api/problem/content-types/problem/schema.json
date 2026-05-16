@@ -1,0 +1,32 @@
+{
+  "kind": "singleType",
+  "collectionName": "problem",
+  "info": {
+    "singularName": "problem",
+    "pluralName": "problems",
+    "displayName": "Problem",
+    "description": "Homepage \"problem\" section. 1:1 with website's ProblemContent interface."
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "heading": {
+      "type": "string",
+      "required": true
+    },
+    "description": {
+      "type": "text",
+      "required": true
+    },
+    "challenges": {
+      "type": "json",
+      "required": true
+    },
+    "consequences": {
+      "type": "json",
+      "required": true
+    }
+  }
+}

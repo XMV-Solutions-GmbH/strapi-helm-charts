@@ -1,0 +1,45 @@
+{
+  "kind": "singleType",
+  "collectionName": "hero",
+  "info": {
+    "singularName": "hero",
+    "pluralName": "heroes",
+    "displayName": "Hero",
+    "description": "Homepage hero section. 1:1 with website's HeroContent interface; nested arrays (claimSegments, usps, imageParallax) stay as JSON for v1 (move to components in a follow-up when editor UX warrants)."
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "subtitle": {
+      "type": "string",
+      "required": true
+    },
+    "ctaLabel": {
+      "type": "string",
+      "required": true
+    },
+    "ctaHref": {
+      "type": "string",
+      "required": true
+    },
+    "image": {
+      "type": "string"
+    },
+    "imageAlt": {
+      "type": "string"
+    },
+    "claimSegments": {
+      "type": "json",
+      "required": true
+    },
+    "usps": {
+      "type": "json",
+      "required": true
+    },
+    "imageParallax": {
+      "type": "json"
+    }
+  }
+}
