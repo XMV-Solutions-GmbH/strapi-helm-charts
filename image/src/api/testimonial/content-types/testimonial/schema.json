@@ -1,0 +1,55 @@
+{
+  "kind": "collectionType",
+  "collectionName": "testimonials",
+  "info": {
+    "singularName": "testimonial",
+    "pluralName": "testimonials",
+    "displayName": "Testimonial",
+    "description": "Customer testimonial / quote. 1:1 with website's Testimonial interface."
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "name": {
+      "type": "string",
+      "required": true
+    },
+    "role": {
+      "type": "string",
+      "required": true
+    },
+    "company": {
+      "type": "string",
+      "required": true
+    },
+    "claim": {
+      "type": "string"
+    },
+    "quote": {
+      "type": "text",
+      "required": true
+    },
+    "photo": {
+      "type": "string"
+    },
+    "order": {
+      "type": "integer",
+      "default": 0,
+      "required": true
+    },
+    "photoZoom": {
+      "type": "decimal",
+      "default": 1.0
+    },
+    "photoPositionX": {
+      "type": "integer",
+      "default": 50
+    },
+    "photoPositionY": {
+      "type": "integer",
+      "default": 50
+    }
+  }
+}
