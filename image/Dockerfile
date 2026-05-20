@@ -26,10 +26,12 @@ RUN apk add --no-cache \
 WORKDIR /app
 
 COPY package*.json ./
-# Use npm install (not npm ci) until package-lock.json is committed.
-# Once `npm install` has been run locally and package-lock.json is committed,
-# switch both npm install lines back to `npm ci` for reproducible builds.
-RUN npm install
+# --ignore-scripts blocks postinstall/preinstall from running automatically,
+# preventing supply-chain attacks via compromised packages. Legitimate native
+# modules (esbuild for the admin panel build, better-sqlite3 for dev-mode
+# SQLite, sharp for image processing) are rebuilt explicitly below.
+RUN npm ci --ignore-scripts && \
+    npm rebuild esbuild better-sqlite3 sharp
 
 COPY . .
 
@@ -67,7 +69,12 @@ WORKDIR /app
 
 # Production deps (no devDependencies)
 COPY package*.json ./
-RUN npm install --omit=dev && npm cache clean --force
+# --ignore-scripts as in the build stage. Only sharp has a postinstall
+# among runtime deps (esbuild and better-sqlite3 are devDependencies,
+# so --omit=dev excludes them here).
+RUN npm ci --ignore-scripts --omit=dev && \
+    npm rebuild sharp && \
+    npm cache clean --force
 
 # Admin panel + compiled TS from build stage
 COPY --from=builder --chown=node:node /app/dist       ./dist
