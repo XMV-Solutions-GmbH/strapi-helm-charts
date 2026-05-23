@@ -14,7 +14,7 @@
 #   - The RUNTIME stage carries only the slim vips package (no headers).
 
 # ── stage 1: install + build ────────────────────────────────────────────────
-FROM node:22-alpine AS builder
+FROM node:26-alpine AS builder
 
 RUN apk add --no-cache \
     build-base \
@@ -59,7 +59,7 @@ RUN apk add --no-cache rsync && \
     rsync -a --include='*/' --include='*.json' --exclude='*' src/ dist/src/
 
 # ── stage 2: production runtime ─────────────────────────────────────────────
-FROM node:22-alpine
+FROM node:26-alpine
 
 # vips (runtime lib only — no headers needed in the final image)
 RUN apk add --no-cache vips
