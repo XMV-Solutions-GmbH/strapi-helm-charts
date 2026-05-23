@@ -22,7 +22,7 @@
   },
   "devDependencies": {
     "@strapi/typescript-utils": "^5.0.0",
-    "@types/node": "^20.14.0",
+    "@types/node": "^25.9.1",
     "better-sqlite3": "^9.4.3",
     "typescript": "^5.4.5"
   },
