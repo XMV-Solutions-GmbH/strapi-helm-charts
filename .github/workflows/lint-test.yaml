@@ -29,7 +29,7 @@ jobs:
           check-latest: true
 
       - name: Set up chart-testing
-        uses: helm/chart-testing-action@v2.6.1
+        uses: helm/chart-testing-action@v2.8.0
 
       - name: helm lint (all charts)
         run: |
@@ -151,7 +151,7 @@ jobs:
           check-latest: true
 
       - name: Set up chart-testing
-        uses: helm/chart-testing-action@v2.6.1
+        uses: helm/chart-testing-action@v2.8.0
 
       - name: List changed charts
         id: list-changed
