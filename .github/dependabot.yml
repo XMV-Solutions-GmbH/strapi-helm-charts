@@ -2,19 +2,37 @@
 #
 # Weekly dependency-bump PRs from Dependabot.
 #
-# - github-actions: catches CVEs / version bumps in workflow actions
-#   (actions/checkout, azure/setup-helm, helm/chart-testing-action, …).
-#   The lint-test.yaml + build-image.yaml + release.yaml workflows together
-#   reference ~15 third-party actions, so this is meaningful coverage.
-# - npm: bumps the Strapi base image's deps under image/. The
-#   `package-lock.json` was committed in the npm-supply-chain hardening
-#   pass (sec/npm-ignore-scripts), so Dependabot can resolve cleanly
-#   against it. Combined with the Dockerfile's `npm ci --ignore-scripts`
-#   posture, postinstall hooks from a compromised package can't execute
-#   at build time.
-# - docker: tracks the base-image bump (`FROM node:22-alpine` in
-#   image/Dockerfile) so security CVEs in the upstream Node image
-#   surface as PRs.
+# Scope is narrow on purpose: only `github-actions` is tracked here,
+# because that's the bit of this repo that's actually our software —
+# the GitHub workflows that lint, build, test, and release the helm
+# chart. Pinned third-party actions get CVE-driven bumps that we
+# evaluate + merge here.
+#
+# What's intentionally NOT tracked:
+#
+# - **npm under /image** — the Strapi container build under image/.
+#   Its package.json deps (`@strapi/strapi`, `@strapi/plugin-*`,
+#   `react`, `react-dom`, `react-router-dom`, `typescript`,
+#   `@types/node`, `better-sqlite3`, `axios`, …) are constrained
+#   by upstream Strapi's peer-dep contract and release cadence. Bumping
+#   them individually here (a) breaks the build when the bump runs
+#   ahead of upstream Strapi (already happened with the React 18→19
+#   and TS 5→6 attempts — PRs #20, #29, #30, #34, #36 all closed with
+#   that exact failure mode), and (b) duplicates work that flows in
+#   transitively when we bump `@strapi/strapi` itself. The Strapi
+#   project upstream is the right place for that maintenance, not
+#   this helm-chart-wrapper repo.
+#
+# - **docker under /image** — the `FROM node:N-alpine` base image
+#   follows what upstream Strapi declares as compatible engine. Same
+#   logic: bumping node major versions here ahead of Strapi's engine
+#   declaration just breaks the build.
+#
+# CVEs in the container's npm or node-image deps are still tracked,
+# just via a different channel: GitHub's Dependabot security alerts
+# (the security-only PRs, not version-update PRs) plus monthly manual
+# review when bumping `@strapi/strapi`. The version-update bot noise
+# was net-negative for this repo and is now turned off here.
 version: 2
 updates:
   - package-ecosystem: "github-actions"
@@ -22,15 +40,3 @@ updates:
     schedule:
       interval: "weekly"
     open-pull-requests-limit: 10
-
-  - package-ecosystem: "npm"
-    directory: "/image"
-    schedule:
-      interval: "weekly"
-    open-pull-requests-limit: 10
-
-  - package-ecosystem: "docker"
-    directory: "/image"
-    schedule:
-      interval: "weekly"
-    open-pull-requests-limit: 5
