@@ -28,9 +28,34 @@ updates:
     schedule:
       interval: "weekly"
     open-pull-requests-limit: 10
+    # Peer-dep constraints come from upstream Strapi (@strapi/strapi).
+    # Bumping these ahead of an upstream Strapi major release breaks
+    # the build — Strapi 5.x pins react ^18, typescript ^5, etc.
+    # When upstream Strapi releases a new major that consumes the
+    # next ecosystem versions, the bumps come transitively via
+    # @strapi/strapi. Major-version PRs on these would just sit red.
+    ignore:
+      - dependency-name: "react"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "react-dom"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "react-router-dom"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "typescript"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "@types/node"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "better-sqlite3"
+        update-types: ["version-update:semver-major"]
 
   - package-ecosystem: "docker"
     directory: "/image"
     schedule:
       interval: "weekly"
     open-pull-requests-limit: 5
+    # Node base image follows what upstream Strapi supports. Major
+    # bumps (node 22-alpine → 26-alpine) need to wait for upstream
+    # Strapi to declare engine compatibility.
+    ignore:
+      - dependency-name: "node"
+        update-types: ["version-update:semver-major"]
