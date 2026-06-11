@@ -42,6 +42,7 @@
     "webpack-bundle-analyzer": {
       "ws": "^7.5.11"
     },
-    "qs": ">=6.15.2"
+    "qs": ">=6.15.2",
+    "shell-quote": ">=1.8.4"
   }
 }
