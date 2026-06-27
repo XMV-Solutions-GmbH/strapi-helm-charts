@@ -48,7 +48,7 @@
     "tmp": ">=0.2.7",
     "markdown-it": ">=14.2.0",
     "tar": ">=7.5.16",
-    "nodemailer": "^8.0.9",
+    "nodemailer": "^9.0.1",
     "undici": "^6.27.0"
   }
 }
