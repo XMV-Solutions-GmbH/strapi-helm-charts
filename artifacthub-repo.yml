@@ -1,5 +1,5 @@
-repositoryID: ""  # filled in by Artifact Hub after registration
+repositoryID: "4927ef6a-2e4c-4e16-b971-0401ba45558d"
 owners:
-  - name: strapi-community
-    email: ""
+  - name: david-koller-xmv
+    email: oss@xmv.de
 ignore: []
