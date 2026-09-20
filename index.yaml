@@ -3,20 +3,12 @@ entries:
   strapi:
   - annotations:
       artifacthub.io/category: integration-delivery
-      artifacthub.io/changes: |
-        - kind: fixed
-          description: Declare the scanned image via artifacthub.io/images so ArtifactHub stops inferring a non-existent strapi/strapi image
-        - kind: fixed
-          description: Correct the claim that strapi/strapi is a v3-only image - no such Docker Hub repository exists at all
-        - kind: added
-          description: CI verifies that every image the chart references actually exists
-      artifacthub.io/images: |
-        - name: strapi
-          image: ghcr.io/xmv-solutions-gmbh/strapi:latest
+      artifacthub.io/changes: "- kind: fixed\n  description: Declare the scanned image via artifacthub.io/images so ArtifactHub stops inferring a non-existent strapi/strapi image\n- kind: fixed\n  description: Correct the claim that strapi/strapi is a v3-only image - no such Docker Hub repository exists at all\n- kind: added\n  description: CI verifies that every image the chart references actually exists\n"
+      artifacthub.io/images: "- name: strapi\n  image: ghcr.io/xmv-solutions-gmbh/strapi:latest\n"
       artifacthub.io/license: Apache-2.0 OR MIT
     apiVersion: v2
     appVersion: 5.0.0
-    created: "2026-09-20T09:53:22.150233701Z"
+    created: '2026-09-20T09:53:22.150233701Z'
     description: Self-hosted Strapi headless CMS
     digest: 3b260a0de4149bf507524ee367904748de321dcc85614a543c37f50cf15fd63e
     home: https://strapi.io
@@ -40,13 +32,11 @@ entries:
     version: 0.1.2
   - annotations:
       artifacthub.io/category: integration-delivery
-      artifacthub.io/changes: |
-        - kind: fixed
-          description: Default image corrected to ghcr.io/xmv-solutions-gmbh/strapi:latest; README added for ArtifactHub display
+      artifacthub.io/changes: "- kind: fixed\n  description: Default image corrected to ghcr.io/xmv-solutions-gmbh/strapi:latest; README added for ArtifactHub display\n"
       artifacthub.io/license: Apache-2.0 OR MIT
     apiVersion: v2
     appVersion: 5.0.0
-    created: "2026-05-16T11:11:40.858246205Z"
+    created: '2026-05-16T11:11:40.858246205Z'
     description: Self-hosted Strapi headless CMS
     digest: 1d42dff5a1c38ce1987998ad4dd5b0df6960f9eaa41255a5cab3b4592e5aae9c
     home: https://strapi.io
@@ -68,34 +58,4 @@ entries:
     urls:
     - https://github.com/XMV-Solutions-GmbH/strapi-helm-charts/releases/download/strapi-0.1.1/strapi-0.1.1.tgz
     version: 0.1.1
-  - annotations:
-      artifacthub.io/category: integration-delivery
-      artifacthub.io/changes: |
-        - kind: added
-          description: Initial chart release with multi-arch ARM64 support (linux/amd64, linux/arm64)
-      artifacthub.io/license: Apache-2.0 OR MIT
-    apiVersion: v2
-    appVersion: 5.0.0
-    created: "2026-05-15T21:17:28.960468118Z"
-    description: Self-hosted Strapi headless CMS
-    digest: eff21b189de0e718e4239afed2b6a5d69ec9738b7102c0c709457a1db1170681
-    home: https://strapi.io
-    icon: https://strapi.io/assets/strapi-logo-dark.svg
-    keywords:
-    - strapi
-    - cms
-    - headless
-    - api
-    maintainers:
-    - email: oss@xmv.de
-      name: XMV-Solutions-GmbH
-      url: https://github.com/XMV-Solutions-GmbH
-    name: strapi
-    sources:
-    - https://github.com/strapi/strapi
-    - https://github.com/XMV-Solutions-GmbH/strapi-helm-charts
-    type: application
-    urls:
-    - https://github.com/XMV-Solutions-GmbH/strapi-helm-charts/releases/download/strapi-0.1.0/strapi-0.1.0.tgz
-    version: 0.1.0
-generated: "2026-09-20T09:53:22.15024408Z"
+generated: '2026-09-20T09:54:24.846471000Z'
