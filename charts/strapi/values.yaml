@@ -8,11 +8,19 @@
 replicaCount: 1
 
 image:
-  # The official strapi/strapi Docker Hub image is v3-only — strapi/strapi-docker
-  # was archived in 2022 (see https://github.com/strapi/strapi-docker README) and
-  # v4+ Docker images live outside the strapi/ org. Until an official multi-arch
-  # v5 image is published, this chart defaults to a community-built multi-arch
-  # build maintained at github.com/XMV-Solutions-GmbH/strapi-helm-charts.
+  # There is NO official Strapi image on Docker Hub. `strapi/strapi` is not a
+  # v3-only image -- the repository does not exist at all (the Docker Hub API
+  # answers "object not found"), and the `strapi/` org holds only two unrelated
+  # hiring-test images. `strapi/strapi-docker` was archived in 2022.
+  #
+  # Chart 0.1.0 defaulted to `strapi/strapi` with an empty tag, which resolved
+  # to `strapi/strapi:5.0.0` and gave every installation an ImagePullBackOff.
+  # Do not "restore the official image" -- there is nothing to restore. If an
+  # official multi-arch v5 image ever appears, verify it resolves before
+  # switching (scripts/verify-chart-images.sh does exactly that).
+  #
+  # Until then this chart defaults to the community-built multi-arch image
+  # maintained at github.com/XMV-Solutions-GmbH/strapi-helm-charts.
   #
   # Override `repository` + `tag` to point at your own Strapi image if you
   # build your own — see CONTRIBUTING.md "Building your own image".
