@@ -2,7 +2,7 @@ apiVersion: v2
 name: strapi
 description: Self-hosted Strapi headless CMS
 type: application
-version: 0.1.1
+version: 0.1.2
 appVersion: "5.0.0"
 home: https://strapi.io
 icon: https://strapi.io/assets/strapi-logo-dark.svg
@@ -21,6 +21,17 @@ keywords:
 annotations:
   artifacthub.io/category: integration-delivery
   artifacthub.io/license: Apache-2.0 OR MIT
+  # Tell ArtifactHub which images to scan. Without this it INFERS one from the
+  # chart metadata -- that inference is what made it scan `strapi/strapi:5.0.0`,
+  # an image that has never existed, and fail every scan on 0.1.0.
+  # scripts/verify-chart-images.sh keeps this list in step with values.yaml.
+  artifacthub.io/images: |
+    - name: strapi
+      image: ghcr.io/xmv-solutions-gmbh/strapi:latest
   artifacthub.io/changes: |
     - kind: fixed
-      description: Default image corrected to ghcr.io/xmv-solutions-gmbh/strapi:latest; README added for ArtifactHub display
+      description: Declare the scanned image via artifacthub.io/images so ArtifactHub stops inferring a non-existent strapi/strapi image
+    - kind: fixed
+      description: Correct the claim that strapi/strapi is a v3-only image - no such Docker Hub repository exists at all
+    - kind: added
+      description: CI verifies that every image the chart references actually exists

@@ -66,7 +66,7 @@ helm repo update
 
 helm install my-strapi strapi-community/strapi \
   --namespace strapi --create-namespace \
-  --set image.repository=strapi/strapi \
+  --set image.repository=ghcr.io/xmv-solutions-gmbh/strapi \
   --set database.host=my-postgres.example.com \
   --set database.existingSecret=strapi-db-password \
   --set strapi.existingSecret=strapi-keys \
@@ -82,7 +82,7 @@ helm install my-strapi strapi-community/strapi \
 | Helm | 3.10+ |
 | Database | PostgreSQL 14+ reachable from the cluster (CNPG / Cloud SQL / RDS / Hetzner managed) |
 | Storage (optional) | An S3-compatible bucket OR a `PersistentVolumeClaim` storage class |
-| Strapi image | A multi-arch image of Strapi v5. The chart defaults to `strapi/strapi` from Docker Hub; see [Custom image](#custom-image--workdir) for caveats. |
+| Strapi image | A multi-arch image of Strapi v5. The chart defaults to `ghcr.io/xmv-solutions-gmbh/strapi`, because **no official Strapi image exists on Docker Hub**; see [Custom image](#custom-image--workdir). |
 
 ## Installation
 
@@ -196,7 +196,7 @@ ingress:
 
 ## Custom image / WORKDIR
 
-The chart defaults to `strapi/strapi` from Docker Hub and assumes the WORKDIR convention used by the upstream [strapi-community/strapi-tool-dockerize](https://github.com/strapi-community/strapi-tool-dockerize) `Dockerfile-prod` template: **`/opt/app`**.
+The chart defaults to `ghcr.io/xmv-solutions-gmbh/strapi` and assumes the WORKDIR convention used by the upstream [strapi-community/strapi-tool-dockerize](https://github.com/strapi-community/strapi-tool-dockerize) `Dockerfile-prod` template: **`/opt/app`**.
 
 If you build your own Strapi image with a different WORKDIR (for example `/app`), override the uploads mount path accordingly when `uploads.provider: local`:
 
@@ -218,7 +218,7 @@ The complete list of values with inline documentation lives in
 
 | Value | Default | Purpose |
 |---|---|---|
-| `image.repository` | `strapi/strapi` | Container image. |
+| `image.repository` | `ghcr.io/xmv-solutions-gmbh/strapi` | Container image. There is no official Strapi image on Docker Hub. |
 | `image.tag` | `Chart.appVersion` | Image tag; pin to a specific Strapi version. |
 | `replicaCount` | `1` | Strapi runs single-replica by default; scale up only with shared media + sticky sessions. |
 | `database.host` | `""` | Postgres host. Mandatory (no default — fail-fast). |

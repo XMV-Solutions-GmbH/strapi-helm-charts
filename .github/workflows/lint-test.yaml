@@ -40,6 +40,29 @@ jobs:
       - name: ct lint (changed charts vs main)
         run: ct lint --target-branch ${{ github.event.repository.default_branch }} --all
 
+  images:
+    name: image-references
+    runs-on: ubuntu-latest
+    # Asserts that every image the chart can point a cluster at actually
+    # resolves, and that artifacthub.io/images matches the values.yaml default.
+    # Chart 0.1.0 shipped a reference to strapi/strapi:5.0.0 -- an image that
+    # has never existed -- and nothing in CI was in a position to notice.
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Install yq
+        run: |
+          sudo wget -qO /usr/local/bin/yq \
+            https://github.com/mikefarah/yq/releases/download/v4.44.3/yq_linux_amd64
+          sudo chmod +x /usr/local/bin/yq
+          yq --version
+
+      - name: Verify chart image references
+        run: |
+          for chart in charts/*/; do
+            ./scripts/verify-chart-images.sh "${chart%/}"
+          done
+
   unittest:
     name: helm-unittest
     runs-on: ubuntu-latest
