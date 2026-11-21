@@ -1,4 +1,4 @@
-# syntax=docker/dockerfile:1
+# syntax=docker/dockerfile:1@sha256:572cebbc2b15e6f84c077742952674889cb63cd5e9b80abdffcbe587b6f19183
 # Production-ready multi-arch Strapi v5 base image.
 # Supports linux/amd64 and linux/arm64 (Graviton, Hetzner CAX, Ampere Altra,
 # Apple Silicon developer machines).
@@ -14,7 +14,7 @@
 #   - The RUNTIME stage carries only the slim vips package (no headers).
 
 # ── stage 1: install + build ────────────────────────────────────────────────
-FROM node:22-alpine AS builder
+FROM node:22-alpine@sha256:1314fb30ec37592d5845e5a160d522c0e680972aa534549940b8d73bde88481a AS builder
 
 RUN apk add --no-cache \
     build-base \
@@ -59,7 +59,7 @@ RUN apk add --no-cache rsync && \
     rsync -a --include='*/' --include='*.json' --exclude='*' src/ dist/src/
 
 # ── stage 2: production runtime ─────────────────────────────────────────────
-FROM node:22-alpine
+FROM node:22-alpine@sha256:1314fb30ec37592d5845e5a160d522c0e680972aa534549940b8d73bde88481a
 
 # vips (runtime lib only — no headers needed in the final image)
 RUN apk add --no-cache vips
